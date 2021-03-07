@@ -1,0 +1,47 @@
+<?php
+/*
+ * Author: Vitor Hugo Nunes Marini
+ * Request API Banco Central ( Olinda - Data Open )
+ * https://dados.gov.br/dataset/dolar-americano-usd-todos-os-boletins-diarios/resource/ae69aa94-4194-45a6-8bae-12904af7e176
+ */
+ 
+#Retorno
+$retorno = false;
+
+#Dados para a URL
+$dataInicio = date("m/d/Y"); //Insira a data de Inicial da busca ( DATA NO PADRÃO ( MM / DD/ AAAA )
+$dataFim    = date("m/d/Y"); //Insira a data de Final   da busca ( DATA NO PADRÃO ( MM / DD/ AAAA );
+$format     = "json"; //TXT / XML / TXT/CSV / TXT/HTML
+$limit      = "100"; //Limite da requisição
+$select     = "cotacaoCompra,cotacaoVenda,dataHoraCotacao"; // Tipos para Retorno
+
+//Montando a URL de busca - Existem mais tipos de cotações, favor ler a documentação destacada na descrição.
+$url = "https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/CotacaoDolarPeriodo(dataInicial=@dataInicial,dataFinalCotacao=@dataFinalCotacao)?"
+    . "@dataInicial='{$dataInicio}'"
+    . "&@dataFinalCotacao='$dataFim'"
+    . "&".'$top='.$limit.''
+    . "&".'$format='.$format.''
+    . '&$select='."{$select}";
+
+#Buscando os dados
+$data  = file_get_contents($url);
+
+#Convertendo os dados para JSON
+$dataJ  = json_decode($data, true);
+$arrVal = $dataJ["value"];
+
+//Lendo o retorno do Array
+foreach ( $arrVal as $dados ){
+
+    #DADOS BÁSICOS DE RETORNO Obs: existem mais dados no retorno, basta efetuar um print_r para lista-los.
+    $cotacaoCompra   = $dados['cotacaoCompra'];
+    $cotacaoVenda    = $dados['cotacaoVenda'];
+    $dataHoraCotacao = $dados['dataHoraCotacao'];
+    $diaCotacao      = substr($dados['dataHoraCotacao'],0,10);
+    
+    #VALIDANDO O RETORNO, caso tenha retornado pelo menos um dado.
+    $retorno = true;
+    
+}
+
+print $retorno;
